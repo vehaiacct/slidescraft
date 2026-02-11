@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Slide, SlideLayout, ThemePreset, CustomThemeConfig, SlideContent } from '../types';
 import { getImageUrl } from '../services/image';
 
@@ -66,9 +67,28 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ slide, theme, customThemeCo
 
     const themeStyles = getThemeStyles();
 
+    const slideVariants = {
+        initial: { opacity: 0, scale: 0.98, x: 20 },
+        animate: { opacity: 1, scale: 1, x: 0 },
+        exit: { opacity: 0, scale: 1.02, x: -20 }
+    };
+
+    const staggerContainer = {
+        animate: {
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemFadeIn = {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 }
+    };
+
     return (
         <div
-            className={`slide-aspect w-full rounded-2xl shadow-2xl relative overflow-hidden transition-all duration-700 ease-out flex flex-col ${isPreview ? 'p-4' : 'p-12 lg:p-20'}`}
+            className={`slide-aspect w-full rounded-2xl md:rounded-[2.5rem] shadow-2xl relative overflow-hidden transition-all duration-700 ease-out flex flex-col ${isPreview ? 'p-4' : 'p-8 md:p-16 lg:p-20'}`}
             style={{
                 aspectRatio: '16/9',
                 ...themeStyles,
@@ -77,96 +97,128 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ slide, theme, customThemeCo
             }}
         >
             {/* Background Image Layer */}
-            {bgImage && !isPreview && (
-                <div
-                    className="absolute inset-0 z-0 transition-opacity duration-1000 animate-fade-in"
-                    style={{
-                        backgroundImage: `url(${bgImage})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                >
-                    {/* Glassmorphic Overlay for Readability */}
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-                </div>
-            )}
+            <AnimatePresence mode="wait">
+                {bgImage && !isPreview && (
+                    <motion.div
+                        key={bgImage}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 z-0"
+                        style={{
+                            backgroundImage: `url(${bgImage})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        }}
+                    >
+                        {/* Glassmorphic Overlay for Readability */}
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            <div className={`flex-grow flex flex-col justify-center relative z-10 ${bgImage && !isPreview ? 'text-white drop-shadow-lg' : ''}`}>
-                {layout === SlideLayout.TITLE ? (
-                    <div className="text-center animate-fade-in">
-                        <h1
-                            contentEditable={!isPreview}
-                            suppressContentEditableWarning
-                            onBlur={(e) => onUpdate?.({ title: e.currentTarget.textContent || '' })}
-                            className={`${isPreview ? 'text-[10px]' : 'text-3xl md:text-5xl lg:text-7xl'} font-extrabold mb-4 lg:mb-6 tracking-tight leading-tight outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
-                        >
-                            {content.title}
-                        </h1>
-                        {content.subtitle && (
-                            <p
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={slide.id}
+                    variants={slideVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className={`flex-grow flex flex-col justify-center relative z-10 ${bgImage && !isPreview ? 'text-white drop-shadow-lg' : ''}`}
+                >
+                    {layout === SlideLayout.TITLE ? (
+                        <div className="text-center">
+                            <motion.h1
+                                variants={itemFadeIn}
                                 contentEditable={!isPreview}
                                 suppressContentEditableWarning
-                                onBlur={(e) => onUpdate?.({ subtitle: e.currentTarget.textContent || '' })}
-                                className={`${isPreview ? 'text-[6px]' : 'text-base md:text-xl lg:text-3xl'} opacity-70 font-light outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
+                                onBlur={(e) => onUpdate?.({ title: e.currentTarget.textContent || '' })}
+                                className={`${isPreview ? 'text-[10px]' : 'text-3xl md:text-5xl lg:text-7xl'} font-extrabold mb-4 lg:mb-6 tracking-tight leading-tight outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
                             >
-                                {content.subtitle}
-                            </p>
-                        )}
-                    </div>
-                ) : layout === SlideLayout.CONTENT ? (
-                    <div className="animate-fade-in h-full flex flex-col">
-                        <h2
-                            contentEditable={!isPreview}
-                            suppressContentEditableWarning
-                            onBlur={(e) => onUpdate?.({ title: e.currentTarget.textContent || '' })}
-                            className={`${isPreview ? 'text-[8px]' : 'text-xl md:text-3xl lg:text-5xl'} font-bold mb-6 lg:mb-10 border-b border-current/10 pb-4 lg:pb-6 outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
-                        >
-                            {content.title}
-                        </h2>
-                        <ul className="space-y-2 lg:space-y-4 flex-grow">
-                            {content.points?.map((point, i) => (
-                                <li key={i} className={`${isPreview ? 'text-[5px]' : 'text-sm md:text-lg lg:text-2xl'} flex items-start gap-3 lg:gap-4`}>
-                                    <span className="mt-1.5 lg:mt-2 block w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-current flex-shrink-0 opacity-50" />
-                                    <div
-                                        contentEditable={!isPreview}
-                                        suppressContentEditableWarning
-                                        onBlur={(e) => {
-                                            const newPoints = [...(content.points || [])];
-                                            newPoints[i] = e.currentTarget.textContent || '';
-                                            onUpdate?.({ points: newPoints });
-                                        }}
-                                        className="outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2 w-full"
+                                {content.title}
+                            </motion.h1>
+                            {content.subtitle && (
+                                <motion.p
+                                    variants={itemFadeIn}
+                                    contentEditable={!isPreview}
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => onUpdate?.({ subtitle: e.currentTarget.textContent || '' })}
+                                    className={`${isPreview ? 'text-[6px]' : 'text-xs md:text-xl lg:text-3xl'} opacity-70 font-light outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
+                                >
+                                    {content.subtitle}
+                                </motion.p>
+                            )}
+                        </div>
+                    ) : layout === SlideLayout.CONTENT ? (
+                        <div className="h-full flex flex-col">
+                            <motion.h2
+                                variants={itemFadeIn}
+                                contentEditable={!isPreview}
+                                suppressContentEditableWarning
+                                onBlur={(e) => onUpdate?.({ title: e.currentTarget.textContent || '' })}
+                                className={`${isPreview ? 'text-[8px]' : 'text-lg md:text-3xl lg:text-5xl'} font-bold mb-4 md:mb-10 border-b border-current/10 pb-4 lg:pb-6 outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
+                            >
+                                {content.title}
+                            </motion.h2>
+                            <motion.ul
+                                variants={staggerContainer}
+                                initial="initial"
+                                animate="animate"
+                                className="space-y-1 md:space-y-4 flex-grow overflow-hidden"
+                            >
+                                {content.points?.map((point, i) => (
+                                    <motion.li
+                                        key={i}
+                                        variants={itemFadeIn}
+                                        className={`${isPreview ? 'text-[5px]' : 'text-[10px] md:text-lg lg:text-2xl'} flex items-start gap-2 lg:gap-4`}
                                     >
-                                        {point}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ) : layout === SlideLayout.TWO_COLUMN ? (
-                    <div className="animate-fade-in h-full flex flex-col">
-                        <h2 className={`${isPreview ? 'text-[8px]' : 'text-3xl lg:text-5xl'} font-bold mb-10`}>
-                            {content.title}
-                        </h2>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:grid-gap-12 flex-grow">
-                            <div className="space-y-2 lg:space-y-4">
-                                {content.leftColumn?.map((point, i) => (
-                                    <p key={i} className={`${isPreview ? 'text-[4px]' : 'text-xs md:text-sm lg:text-xl'} opacity-80 leading-relaxed`}>{point}</p>
+                                        <span className="mt-1.5 lg:mt-2 block w-1 h-1 lg:w-2 lg:h-2 rounded-full bg-current flex-shrink-0 opacity-50" />
+                                        <div
+                                            contentEditable={!isPreview}
+                                            suppressContentEditableWarning
+                                            onBlur={(e) => {
+                                                const newPoints = [...(content.points || [])];
+                                                newPoints[i] = e.currentTarget.textContent || '';
+                                                onUpdate?.({ points: newPoints });
+                                            }}
+                                            className="outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2 w-full"
+                                        >
+                                            {point}
+                                        </div>
+                                    </motion.li>
                                 ))}
-                            </div>
-                            <div className="space-y-2 lg:space-y-4">
-                                {content.rightColumn?.map((point, i) => (
-                                    <p key={i} className={`${isPreview ? 'text-[4px]' : 'text-xs md:text-sm lg:text-xl'} opacity-80 leading-relaxed`}>{point}</p>
-                                ))}
+                            </motion.ul>
+                        </div>
+                    ) : layout === SlideLayout.TWO_COLUMN ? (
+                        <div className="h-full flex flex-col">
+                            <motion.h2
+                                variants={itemFadeIn}
+                                className={`${isPreview ? 'text-[8px]' : 'text-xl md:text-3xl lg:text-5xl'} font-bold mb-4 md:mb-10`}
+                            >
+                                {content.title}
+                            </motion.h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:grid-gap-12 flex-grow overflow-hidden">
+                                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-1 md:space-y-4">
+                                    {content.leftColumn?.map((point, i) => (
+                                        <motion.p key={i} variants={itemFadeIn} className={`${isPreview ? 'text-[4px]' : 'text-[8px] md:text-sm lg:text-xl'} opacity-80 leading-relaxed`}>{point}</motion.p>
+                                    ))}
+                                </motion.div>
+                                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-1 md:space-y-4">
+                                    {content.rightColumn?.map((point, i) => (
+                                        <motion.p key={i} variants={itemFadeIn} className={`${isPreview ? 'text-[4px]' : 'text-[8px] md:text-sm lg:text-xl'} opacity-80 leading-relaxed`}>{point}</motion.p>
+                                    ))}
+                                </motion.div>
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-10 opacity-50 italic">
-                        {content.title}
-                    </div>
-                )}
-            </div>
+                    ) : (
+                        <div className="text-center py-10 opacity-50 italic">
+                            {content.title}
+                        </div>
+                    )}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 };

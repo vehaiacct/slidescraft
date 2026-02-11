@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
 import { Presentation, ThemePreset, CustomThemeConfig, FilePart, SlideContent } from './types';
 import { generatePresentation } from './services/groq';
@@ -13,7 +14,10 @@ import {
     Layout,
     Presentation as PresentationIcon,
     LogOut,
-    MessageSquare
+    MessageSquare,
+    Menu,
+    X,
+    Sparkles
 } from 'lucide-react';
 
 interface SelectedFile extends FilePart {
@@ -78,6 +82,8 @@ const App: React.FC = () => {
     const handleGenerate = async () => {
         if (!inputText.trim() && selectedFiles.length === 0) return;
         setIsLoading(true);
+        if (window.innerWidth < 1024) setIsSidebarOpen(false);
+
         try {
             const fileParts: FilePart[] = selectedFiles.map(f => ({
                 data: f.data,
@@ -115,7 +121,6 @@ const App: React.FC = () => {
 
     const handleExport = () => {
         if (presentation) {
-            // Ensure the exported theme matches the current UI theme
             const finalPresentation = {
                 ...presentation,
                 theme: theme,
@@ -127,202 +132,299 @@ const App: React.FC = () => {
 
     if (!isLoaded) {
         return (
-            <div className="min-h-screen bg-slate-950 flex-center">
-                <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+            <div className="min-h-screen bg-slate-950 flex flex-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"
+                />
             </div>
         );
     }
 
     return (
-        <>
+        <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30 overflow-hidden font-sans">
             <SignedIn>
-                <div className="min-h-screen flex flex-col lg:flex-row bg-slate-950 text-slate-100 selection:bg-indigo-500/30 overflow-x-hidden">
-                    {/* Mobile Overlay */}
-                    {isSidebarOpen && (
-                        <div
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
-                            onClick={() => setIsSidebarOpen(false)}
-                        />
-                    )}
+                <div className="flex h-screen overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        {(isSidebarOpen || window.innerWidth >= 1024) && (
+                            <Sidebar
+                                inputText={inputText}
+                                setInputText={setInputText}
+                                selectedFiles={selectedFiles}
+                                handleFileChange={handleFileChange}
+                                removeFile={removeFile}
+                                theme={theme}
+                                setTheme={setTheme}
+                                onGenerate={handleGenerate}
+                                isLoading={isLoading}
+                                fileInputRef={fileInputRef}
+                                isOpen={isSidebarOpen}
+                                onClose={() => setIsSidebarOpen(false)}
+                            />
+                        )}
+                    </AnimatePresence>
 
-                    <Sidebar
-                        inputText={inputText}
-                        setInputText={setInputText}
-                        selectedFiles={selectedFiles}
-                        handleFileChange={handleFileChange}
-                        removeFile={removeFile}
-                        theme={theme}
-                        setTheme={setTheme}
-                        onGenerate={handleGenerate}
-                        isLoading={isLoading}
-                        fileInputRef={fileInputRef}
-                        isOpen={isSidebarOpen}
-                        onClose={() => setIsSidebarOpen(false)}
-                    />
+                    {/* Mobile Backdrop */}
+                    <AnimatePresence>
+                        {isSidebarOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 lg:hidden"
+                            />
+                        )}
+                    </AnimatePresence>
 
-                    <main className="flex-grow h-screen overflow-y-auto bg-[radial-gradient(circle_at_top_right,_var(--bg-sidebar),_transparent)] p-6 md:p-12 lg:p-20 relative">
-                        {/* Mobile Header */}
-                        <header className="lg:hidden flex items-center justify-between mb-8">
-                            <button
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="p-3 glass rounded-xl text-slate-400"
-                            >
-                                <Layout size={24} />
-                            </button>
+                    <main className="flex-grow flex flex-col h-screen relative bg-[radial-gradient(circle_at_top_right,_var(--bg-sidebar),_transparent)]">
+                        {/* Improved Header */}
+                        <header className="p-4 md:p-6 flex items-center justify-between z-30">
                             <div className="flex items-center gap-4">
-                                <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: 'w-10 h-10 border border-white/10' } }} />
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setIsSidebarOpen(true)}
+                                    className="lg:hidden p-3 glass rounded-2xl text-slate-400 hover:text-white"
+                                >
+                                    <Menu size={20} />
+                                </motion.button>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex-center shadow-lg shadow-indigo-500/20">
+                                        <Sparkles size={18} className="text-white md:w-5 md:h-5" />
+                                    </div>
+                                    <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block">SlideCraft<span className="text-indigo-400">AI</span></span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: 'w-9 h-9 md:w-11 md:h-11 border-2 border-white/5 hover:border-indigo-500/50 transition-colors' } }} />
+                                </motion.div>
                             </div>
                         </header>
 
-                        {/* Desktop User Button */}
-                        <div className="hidden lg:block absolute top-8 right-8 z-50">
-                            <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: 'w-10 h-10 border border-white/10' } }} />
-                        </div>
-
-                        <div className="max-w-6xl mx-auto h-full flex flex-col">
-                            {!presentation ? (
-                                <div className="flex-grow flex-center animate-fade-in">
-                                    <div className="text-center space-y-8 max-w-lg">
-                                        <div className="w-24 h-24 bg-indigo-600/10 rounded-[2.5rem] flex-center mx-auto border border-indigo-500/20 shadow-[0_0_50px_rgba(79,70,229,0.1)]">
-                                            <PresentationIcon size={48} className="text-indigo-400" />
-                                        </div>
-                                        <div className="space-y-4">
-                                            <h2 className="text-4xl lg:text-5xl font-black tracking-tight">Your story, <br /><span className="gradient-text">beautifully told.</span></h2>
-                                            <p className="text-slate-400 text-lg leading-relaxed">
-                                                Input your raw thoughts or upload a document. Our AI will craft a high-impact presentation in seconds.
-                                            </p>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-6 pt-4">
-                                            {[
-                                                { icon: Layout, label: "AI Structure" },
-                                                { icon: Download, label: "PPTX Export" },
-                                                { icon: RefreshCw, label: "Live Preview" }
-                                            ].map((item, i) => (
-                                                <div key={i} className="space-y-2 opacity-50">
-                                                    <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex-center mx-auto">
-                                                        <item.icon size={20} />
-                                                    </div>
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex-grow flex flex-col space-y-12 animate-fade-in">
-                                    <header className="flex items-center justify-between">
-                                        <div>
-                                            <h2 className="text-3xl font-black tracking-tight truncate max-w-md">{presentation.title}</h2>
-                                            <p className="text-indigo-400 font-bold text-xs uppercase tracking-widest mt-1">
-                                                {presentation.slides.length} SLIDES · {theme} THEME
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <button onClick={handleGenerate} className="p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-slate-400">
-                                                <RefreshCw size={20} />
-                                            </button>
-                                            <button
-                                                onClick={handleExport}
-                                                className="flex items-center gap-3 px-8 py-4 bg-white text-slate-950 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-indigo-50 transition-all shadow-xl shadow-white/5"
-                                            >
-                                                <Download size={18} />
-                                                <span>Export PPTX</span>
-                                            </button>
-                                        </div>
-                                    </header>
-
-                                    <div className="flex-grow flex flex-col lg:flex-row gap-8 items-start relative px-4 md:px-20">
-                                        <button
-                                            onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
-                                            disabled={currentSlideIndex === 0}
-                                            className="absolute left-0 top-1/2 -translate-y-1/2 p-4 md:p-6 glass rounded-2xl md:rounded-3xl text-slate-400 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all z-10"
+                        <div className="flex-grow overflow-y-auto px-4 md:px-12 lg:px-20 pb-20">
+                            <div className="max-w-6xl mx-auto h-full flex flex-col">
+                                <AnimatePresence mode="wait">
+                                    {!presentation ? (
+                                        <motion.div
+                                            key="empty"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            className="flex-grow flex-center"
                                         >
-                                            <ChevronLeft size={24} className="md:w-8 md:h-8" />
-                                        </button>
-
-                                        <div className="flex-grow space-y-8 w-full">
-                                            <div className="premium-card overflow-hidden">
-                                                <SlidePreview
-                                                    slide={presentation.slides[currentSlideIndex]}
-                                                    theme={theme}
-                                                    customThemeConfig={theme === 'custom' ? customTheme : undefined}
-                                                    onUpdate={handleUpdateSlide}
-                                                />
-                                            </div>
-
-                                            {/* Speaker Notes Section */}
-                                            <div className="glass premium-card p-6 md:p-8 animate-slide-in-right" style={{ animationDelay: '0.2s' }}>
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <div className="w-8 h-8 bg-indigo-600/20 rounded-lg flex-center">
-                                                        <MessageSquare size={16} className="text-indigo-400" />
-                                                    </div>
-                                                    <h3 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">Presenter Script</h3>
-                                                </div>
-                                                <div
-                                                    contentEditable
-                                                    suppressContentEditableWarning
-                                                    onBlur={(e) => handleUpdateSlide({ speakerNotes: e.currentTarget.textContent || '' })}
-                                                    className="text-slate-300 leading-relaxed text-sm outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-lg p-2 transition-all min-h-[60px]"
+                                            <div className="text-center space-y-10 max-w-lg">
+                                                <motion.div
+                                                    animate={{ y: [0, -10, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 4 }}
+                                                    className="w-24 h-24 md:w-32 md:h-32 bg-indigo-600/10 rounded-[2.5rem] md:rounded-[3rem] flex-center mx-auto border border-indigo-500/20 shadow-[0_0_60px_rgba(79,70,229,0.1)]"
                                                 >
-                                                    {presentation.slides[currentSlideIndex].content.speakerNotes || "Click here to add notes for this slide..."}
+                                                    <PresentationIcon size={56} className="text-indigo-400 md:w-16 md:h-16" />
+                                                </motion.div>
+                                                <div className="space-y-4">
+                                                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                                                        Your story, <br />
+                                                        <span className="gradient-text">beautifully told.</span>
+                                                    </h2>
+                                                    <p className="text-slate-400 text-base md:text-xl leading-relaxed">
+                                                        From raw thoughts to high-impact slides. <br className="hidden md:block" />
+                                                        Powered by next-gen AI.
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <button
-                                            onClick={() => setCurrentSlideIndex(prev => Math.min(presentation.slides.length - 1, prev + 1))}
-                                            disabled={currentSlideIndex === presentation.slides.length - 1}
-                                            className="absolute right-0 top-1/2 -translate-y-1/2 p-4 md:p-6 glass rounded-2xl md:rounded-3xl text-slate-400 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all z-10"
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="presentation"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex-grow flex flex-col space-y-8 md:space-y-12"
                                         >
-                                            <ChevronRight size={24} className="md:w-8 md:h-8" />
-                                        </button>
-                                    </div>
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                                <div>
+                                                    <h2 className="text-2xl md:text-4xl font-black tracking-tight truncate max-w-xl">{presentation.title}</h2>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className="px-2 py-1 bg-indigo-500/10 text-indigo-400 rounded-md text-[10px] font-bold uppercase tracking-widest leading-none">
+                                                            {presentation.slides.length} SLIDES
+                                                        </span>
+                                                        <span className="px-2 py-1 bg-white/5 text-slate-400 rounded-md text-[10px] font-bold uppercase tracking-widest leading-none">
+                                                            {theme} THEME
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={handleGenerate}
+                                                        className="p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all text-slate-400"
+                                                    >
+                                                        <RefreshCw size={20} />
+                                                    </motion.button>
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.02, y: -2 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        onClick={handleExport}
+                                                        className="flex-grow md:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-white text-slate-950 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-indigo-50 transition-all shadow-xl shadow-white/5"
+                                                    >
+                                                        <Download size={18} />
+                                                        <span>Export PPTX</span>
+                                                    </motion.button>
+                                                </div>
+                                            </div>
 
-                                    <footer className="flex justify-center gap-3 overflow-x-auto py-4 px-2 no-scrollbar">
-                                        {presentation.slides.map((_, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => setCurrentSlideIndex(idx)}
-                                                className={`flex-shrink-0 h-1 rounded-full transition-all duration-500 ${currentSlideIndex === idx ? 'w-12 bg-indigo-500' : 'w-4 bg-slate-800 hover:bg-slate-600'
-                                                    }`}
-                                            />
-                                        ))}
-                                    </footer>
-                                </div>
-                            )}
+                                            <div className="flex-grow flex flex-col lg:flex-row gap-8 items-start relative pb-10">
+                                                {/* Desktop Nav Controls */}
+                                                <div className="hidden lg:block absolute -left-20 top-1/2 -translate-y-1/2">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.1, x: -5 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
+                                                        disabled={currentSlideIndex === 0}
+                                                        className="p-6 glass rounded-full text-slate-400 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all"
+                                                    >
+                                                        <ChevronLeft size={32} />
+                                                    </motion.button>
+                                                </div>
+
+                                                <div className="flex-grow space-y-6 md:space-y-10 w-full">
+                                                    <div className="premium-card overflow-hidden w-full max-w-5xl mx-auto shadow-2xl">
+                                                        <SlidePreview
+                                                            slide={presentation.slides[currentSlideIndex]}
+                                                            theme={theme}
+                                                            customThemeConfig={theme === 'custom' ? customTheme : undefined}
+                                                            onUpdate={handleUpdateSlide}
+                                                        />
+                                                    </div>
+
+                                                    <div className="max-w-5xl mx-auto w-full">
+                                                        <div className="glass premium-card p-6 md:p-10">
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex-center">
+                                                                    <MessageSquare size={18} className="text-indigo-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Presenter Script</h3>
+                                                                    <p className="text-[10px] text-slate-600 font-medium">AI generated guide for your delivery</p>
+                                                                </div>
+                                                            </div>
+                                                            <div
+                                                                contentEditable
+                                                                suppressContentEditableWarning
+                                                                onBlur={(e) => handleUpdateSlide({ speakerNotes: e.currentTarget.textContent || '' })}
+                                                                className="text-slate-300 leading-relaxed text-sm md:text-lg outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-xl p-4 transition-all min-h-[100px] bg-black/20 border border-white/5"
+                                                            >
+                                                                {presentation.slides[currentSlideIndex].content.speakerNotes || "Click here to add notes for this slide..."}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="hidden lg:block absolute -right-20 top-1/2 -translate-y-1/2">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.1, x: 5 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={() => setCurrentSlideIndex(prev => Math.min(presentation.slides.length - 1, prev + 1))}
+                                                        disabled={currentSlideIndex === presentation.slides.length - 1}
+                                                        className="p-6 glass rounded-full text-slate-400 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all"
+                                                    >
+                                                        <ChevronRight size={32} />
+                                                    </motion.button>
+                                                </div>
+
+                                                {/* Mobile Nav Controls */}
+                                                <div className="lg:hidden flex items-center justify-between w-full gap-4 mt-6">
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
+                                                        disabled={currentSlideIndex === 0}
+                                                        className="flex-grow p-4 glass rounded-2xl text-slate-400 flex-center disabled:opacity-30"
+                                                    >
+                                                        <ChevronLeft size={24} />
+                                                    </motion.button>
+                                                    <div className="px-6 py-4 glass rounded-2xl text-xs font-bold tracking-widest">
+                                                        {currentSlideIndex + 1} / {presentation.slides.length}
+                                                    </div>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={() => setCurrentSlideIndex(prev => Math.min(presentation.slides.length - 1, prev + 1))}
+                                                        disabled={currentSlideIndex === presentation.slides.length - 1}
+                                                        className="flex-grow p-4 glass rounded-2xl text-slate-400 flex-center disabled:opacity-30"
+                                                    >
+                                                        <ChevronRight size={24} />
+                                                    </motion.button>
+                                                </div>
+                                            </div>
+
+                                            {/* Scroll Progress Indicators */}
+                                            <footer className="flex justify-center gap-2 md:gap-4 overflow-x-auto py-6 no-scrollbar">
+                                                {presentation.slides.map((_, idx) => (
+                                                    <motion.button
+                                                        key={idx}
+                                                        initial={false}
+                                                        animate={{
+                                                            width: currentSlideIndex === idx ? 40 : 8,
+                                                            backgroundColor: currentSlideIndex === idx ? '#6366f1' : '#1e293b'
+                                                        }}
+                                                        onClick={() => setCurrentSlideIndex(idx)}
+                                                        className="h-2 rounded-full transition-all duration-300"
+                                                    />
+                                                ))}
+                                            </footer>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </main>
                 </div>
             </SignedIn>
+
             <SignedOut>
-                <div className="min-h-screen bg-slate-950 flex-center p-6">
-                    <div className="max-w-md w-full glass p-8 rounded-[2.5rem] border border-white/10">
-                        <div className="text-center space-y-6 mb-12">
-                            <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex-center mx-auto shadow-2xl shadow-indigo-500/40 rotate-12">
-                                <Layout size={40} className="text-white -rotate-12" />
+                <div className="min-h-screen bg-[#020617] flex flex-center p-6 relative overflow-hidden">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="max-w-md w-full glass p-10 md:p-14 rounded-[3rem] border border-white/10 relative z-10"
+                    >
+                        <div className="text-center space-y-8 mb-12">
+                            <motion.div
+                                animate={{ rotate: [12, 15, 12] }}
+                                transition={{ repeat: Infinity, duration: 3 }}
+                                className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex-center mx-auto shadow-2xl shadow-indigo-500/40"
+                            >
+                                <Layout size={48} className="text-white" />
+                            </motion.div>
+                            <div className="space-y-4">
+                                <h1 className="text-5xl font-black tracking-tight gradient-text">Welcome</h1>
+                                <p className="text-slate-400 text-lg">Your next masterpiece starts here.</p>
                             </div>
-                            <h1 className="text-4xl font-black gradient-text">Welcome Back</h1>
-                            <p className="text-slate-400">Sign in to continue your Slidecraft journey</p>
                         </div>
                         <SignIn
                             appearance={{
                                 elements: {
-                                    card: 'bg-transparent shadow-none p-0',
+                                    card: 'bg-transparent shadow-none p-0 w-full',
                                     headerTitle: 'hidden',
                                     headerSubtitle: 'hidden',
-                                    socialButtonsBlockButton: 'glass border-white/10 hover:bg-white/5 transition-all py-4 text-slate-100',
-                                    formButtonPrimary: 'bg-indigo-600 hover:bg-indigo-500 transition-all py-4 rounded-xl font-bold tracking-widest uppercase',
+                                    socialButtonsBlockButton: 'glass border-white/10 hover:bg-white/5 transition-all py-4 text-slate-100 rounded-2xl mb-4',
+                                    formButtonPrimary: 'bg-indigo-600 hover:bg-indigo-500 transition-all py-4 rounded-2xl font-bold tracking-widest uppercase shadow-lg shadow-indigo-600/30',
                                     footer: 'hidden',
                                     dividerRow: 'hidden',
-                                    formFieldInput: 'bg-slate-900 border-slate-700 rounded-xl p-4 text-white',
-                                    formFieldLabel: 'text-xs font-bold uppercase tracking-widest text-slate-400'
+                                    formFieldInput: 'bg-slate-900/50 border-white/5 rounded-2xl p-4 text-white focus:ring-indigo-500/50 transition-all',
+                                    formFieldLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1 mb-2'
                                 }
                             }}
                         />
-                    </div>
+                    </motion.div>
                 </div>
             </SignedOut>
-        </>
+        </div>
     );
 };
 

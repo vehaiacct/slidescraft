@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
     FileText,
     Upload,
@@ -7,7 +8,9 @@ import {
     X,
     File,
     ChevronRight,
-    Monitor
+    Monitor,
+    Layout,
+    Check
 } from 'lucide-react';
 import { ThemePreset } from '../types';
 import { useUser } from '@clerk/clerk-react';
@@ -39,103 +42,167 @@ const Sidebar: React.FC<SidebarProps> = ({
         'midnight', 'cyberpunk', 'school', 'custom'
     ];
 
+    const sidebarVariants = {
+        open: { x: 0, opacity: 1, transition: { type: 'spring' as const, damping: 25, stiffness: 200 } },
+        closed: { x: '-100%', opacity: 0, transition: { type: 'spring' as const, damping: 25, stiffness: 200 } }
+    };
+
+    const containerVariants = {
+        animate: { transition: { staggerChildren: 0.05 } }
+    };
+
+    const itemVariants = {
+        initial: { opacity: 0, x: -10 },
+        animate: { opacity: 1, x: 0 }
+    };
+
     return (
-        <aside className={`
-            fixed lg:sticky top-0 left-0 h-screen glass z-50 p-8 flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out
-            w-[85vw] sm:w-[400px] lg:w-[450px]
-            ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-            <div className="flex items-center justify-between mb-12">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 lg:w-12 lg:h-12 bg-indigo-600 rounded-2xl flex-center shadow-lg shadow-indigo-500/30">
-                        <Monitor className="text-white" size={20} />
+        <motion.aside
+            initial={window.innerWidth < 1024 ? "closed" : "open"}
+            animate="open"
+            exit="closed"
+            variants={sidebarVariants}
+            className="fixed lg:sticky top-0 left-0 h-screen glass z-50 p-6 md:p-8 flex flex-col overflow-y-auto no-scrollbar w-[85vw] sm:w-[380px] lg:w-[420px] transition-all bg-slate-950/80 border-r border-white/5"
+        >
+            <div className="flex items-center justify-between mb-10 md:mb-12">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-[1.25rem] flex-center shadow-lg shadow-indigo-500/30">
+                        <Layout className="text-white" size={20} />
                     </div>
                     <div>
-                        <h1 className="text-xl lg:text-2xl font-black tracking-tighter gradient-text leading-none">SLIDECRAFT AI</h1>
-                        <p className="text-[8px] lg:text-[10px] text-indigo-400 font-bold tracking-[0.2em] uppercase">Premium Deck Engine</p>
+                        <h1 className="text-xl md:text-2xl font-black tracking-tighter gradient-text leading-none">SlideCraft<span className="text-indigo-400">AI</span></h1>
+                        <p className="text-[8px] md:text-[10px] text-indigo-400 font-bold tracking-[0.2em] uppercase">Premium Deck Engine</p>
                     </div>
                 </div>
 
-                {/* Mobile Close Button */}
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="lg:hidden p-2 hover:bg-white/5 rounded-xl text-slate-400"
+                    className="lg:hidden p-3 hover:bg-white/5 rounded-2xl text-slate-400"
                 >
                     <X size={24} />
-                </button>
+                </motion.button>
             </div>
 
-            <div className="flex-grow space-y-8 lg:space-y-10">
-                <section className="space-y-4">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <FileText size={14} className="text-indigo-400" /> Content Source
+            <motion.div variants={containerVariants} initial="initial" animate="animate" className="flex-grow space-y-8 md:space-y-10">
+                <motion.section variants={itemVariants} className="space-y-4">
+                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <FileText size={12} className="text-indigo-500" /> Content Logic
                     </label>
-                    <textarea
-                        className="w-full h-40 bg-slate-900/50 border border-slate-700 rounded-2xl p-6 text-sm text-slate-100 focus:border-indigo-500 transition-all resize-none"
-                        placeholder="Paste your notes here..."
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                    />
-                </section>
+                    <div className="relative group">
+                        <textarea
+                            className="w-full h-36 md:h-44 bg-slate-900/30 border border-white/5 rounded-2xl p-5 text-sm md:text-base text-slate-100 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900/50 transition-all resize-none shadow-inner"
+                            placeholder="Type your presentation goals or paste detailed notes..."
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                        />
+                        <div className="absolute right-4 bottom-4 opacity-30 group-focus-within:opacity-100 transition-opacity">
+                            <Sparkles size={16} className="text-indigo-400" />
+                        </div>
+                    </div>
+                </motion.section>
 
-                <section className="space-y-4">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Upload size={14} className="text-indigo-400" /> Documents
+                <motion.section variants={itemVariants} className="space-y-4">
+                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Upload size={12} className="text-indigo-500" /> Source Files
                     </label>
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-slate-700 rounded-2xl p-8 flex-center flex-col cursor-pointer hover:bg-indigo-500/5 transition-all"
+                        className="group border border-dashed border-white/10 rounded-2xl p-6 md:p-8 flex-center flex-col cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/30 transition-all bg-black/20"
                     >
-                        <Upload size={20} className="text-slate-400 mb-2" />
-                        <p className="text-sm font-medium text-slate-400">Click to Upload</p>
+                        <div className="w-10 h-10 bg-slate-800 rounded-full flex-center mb-3 group-hover:scale-110 transition-transform">
+                            <Upload size={18} className="text-slate-400" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upload Assets</p>
+                        <p className="text-[10px] text-slate-600 mt-1">PDF, DOCX, or Images</p>
                         <input type="file" ref={fileInputRef} className="hidden" multiple onChange={handleFileChange} />
                     </div>
 
-                    {selectedFiles.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between p-3 bg-slate-800/40 rounded-xl">
-                            <span className="text-xs truncate">{file.name}</span>
-                            <button onClick={() => removeFile(file.id)} className="text-slate-500 hover:text-red-400"><X size={14} /></button>
-                        </div>
-                    ))}
-                </section>
-
-                <section className="space-y-4">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Palette size={14} className="text-indigo-400" /> Visuals
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                        {themePresets.map((t) => (
-                            <button
-                                key={t}
-                                onClick={() => setTheme(t)}
-                                className={`py-3 rounded-xl text-xs font-bold ${theme === t ? 'bg-indigo-600' : 'bg-slate-800'}`}
+                    <div className="space-y-2">
+                        {selectedFiles.map((file) => (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key={file.id}
+                                className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl group"
                             >
-                                {t}
-                            </button>
+                                <div className="flex items-center gap-3">
+                                    <File size={14} className="text-indigo-400" />
+                                    <span className="text-xs font-medium truncate max-w-[150px]">{file.name}</span>
+                                </div>
+                                <button onClick={() => removeFile(file.id)} className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-red-400 transition-colors">
+                                    <X size={14} />
+                                </button>
+                            </motion.div>
                         ))}
                     </div>
-                </section>
-            </div>
+                </motion.section>
 
-            <button
-                onClick={onGenerate}
-                disabled={isLoading}
-                className="w-full py-5 bg-indigo-600 rounded-2xl font-black text-sm tracking-widest uppercase flex-center gap-3 mt-12 hover:bg-indigo-500 transition-all mb-8"
+                <motion.section variants={itemVariants} className="space-y-4">
+                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Palette size={12} className="text-indigo-500" /> Visual Identity
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        {themePresets.map((t) => (
+                            <motion.button
+                                key={t}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setTheme(t)}
+                                className={`relative p-3 md:p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all truncate ${theme === t
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                    }`}
+                            >
+                                {t}
+                                {theme === t && (
+                                    <div className="absolute top-1 right-1">
+                                        <Check size={8} className="text-white" />
+                                    </div>
+                                )}
+                            </motion.button>
+                        ))}
+                    </div>
+                </motion.section>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-10"
             >
-                {isLoading ? "Generating..." : "Generate Deck"}
-                {!isLoading && <ChevronRight size={16} />}
-            </button>
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onGenerate}
+                    disabled={isLoading}
+                    className="w-full py-4 md:py-5 bg-indigo-600 rounded-2xl md:rounded-[1.25rem] font-black text-sm tracking-widest uppercase flex-center gap-3 hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/30 disabled:opacity-50"
+                >
+                    {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <>
+                            <span>Project Launch</span>
+                            <ChevronRight size={18} />
+                        </>
+                    )}
+                </motion.button>
+            </motion.div>
 
             {user && (
                 <div className="mt-auto pt-8 border-t border-white/5 flex items-center gap-4">
-                    <img src={user.imageUrl} className="w-10 h-10 rounded-xl border border-white/10" alt="Avatar" />
+                    <div className="relative">
+                        <img src={user.imageUrl} className="w-10 h-10 md:w-11 md:h-11 rounded-1.25rem md:rounded-xl border border-white/10" alt="Avatar" />
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-slate-950 rounded-full" />
+                    </div>
                     <div>
-                        <p className="text-sm font-bold white-space-nowrap">{user.fullName || user.username}</p>
-                        <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Premium User</p>
+                        <p className="text-xs md:text-sm font-black white-space-nowrap">{user.fullName || user.username}</p>
+                        <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Premium Active</p>
                     </div>
                 </div>
             )}
-        </aside>
+        </motion.aside>
     );
 };
 

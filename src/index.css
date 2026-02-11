@@ -1,24 +1,25 @@
 :root {
-    --primary: #4338ca;
-    --primary-glow: rgba(67, 56, 202, 0.5);
-    --secondary: #6366f1;
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.5);
+    --secondary: #4f46e5;
     --accent: #818cf8;
-    --bg-main: #0f172a;
-    --bg-sidebar: #1e293b;
+    --bg-main: #020617;
+    --bg-sidebar: #0f172a;
     --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-muted: #64748b;
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
     --success: #10b981;
     --error: #ef4444;
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -52,6 +53,7 @@ body {
 .gradient-text {
     background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
