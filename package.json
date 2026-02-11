@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@clerk/clerk-react": "^5.60.0",
     "@google/genai": "^1.40.0",
     "lucide-react": "^0.563.0",
     "pptxgenjs": "^4.0.1",

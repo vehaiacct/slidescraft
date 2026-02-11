@@ -40,11 +40,24 @@ export async function generatePresentation(
     const messages: any[] = [
         {
             role: "system",
-            content: `You are a professional presentation designer. 
+            content: `You are a professional presentation designer and content creator. 
             You must respond in valid JSON format.
+            
+            Theme-specific instructions:
+            - If theme is 'school': Use simple, engaging, and child-friendly language suitable for elementary school students (ages 6-11). Focus on being educational, fun, and clear.
+            - If theme is 'corporate': Use professional, punchy business language.
+            - If theme is 'minimal': Use concise, high-impact text.
+            
             Structure the response as a Presentation object with "title" (string) and "slides" (array).
             Each slide has "id" (string), "layout" (TITLE, CONTENT, TWO_COLUMN, QUOTE), and "content" (object).
-            "content" has "title" (string), "subtitle" (string), "points" (string array), "leftColumn" (string array), "rightColumn" (string array), and "imageDescription" (string).`
+            "content" MUST include:
+            - "title": (string)
+            - "subtitle": (string, optional)
+            - "points": (string array, optional)
+            - "leftColumn": (string array, optional)
+            - "rightColumn": (string array, optional)
+            - "speakerNotes": (string) A detailed script for the presenter (3-4 sentences).
+            - "imagePrompt": (string) A highly descriptive prompt for a cinematic background image. Be specific about style, lighting, and elements (e.g. "aerial view of a lush rainforest at sunrise, hyper-realistic, 8k, soft lighting"). Avoid text in images.`
         },
         {
             role: "user",

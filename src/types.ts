@@ -13,6 +13,8 @@ export interface SlideContent {
     imageDescription?: string;
     leftColumn?: string[];
     rightColumn?: string[];
+    speakerNotes?: string;
+    imagePrompt?: string;
 }
 
 export interface Slide {
@@ -27,7 +29,7 @@ export interface CustomThemeConfig {
     fontFamily: string;
 }
 
-export type ThemePreset = 'modern' | 'corporate' | 'creative' | 'minimal' | 'midnight' | 'nature' | 'sunset' | 'cyberpunk' | 'academic' | 'custom';
+export type ThemePreset = 'modern' | 'corporate' | 'creative' | 'minimal' | 'midnight' | 'nature' | 'sunset' | 'cyberpunk' | 'academic' | 'school' | 'custom';
 
 export interface Presentation {
     title: string;
