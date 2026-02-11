@@ -34,6 +34,7 @@ const App: React.FC = () => {
     const [presentation, setPresentation] = useState<Presentation | null>(null);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
     const [theme, setTheme] = useState<ThemePreset>('modern');
+    const [slideCount, setSlideCount] = useState(7);
     const [customTheme] = useState<CustomThemeConfig>({
         primaryColor: '#6366f1',
         secondaryColor: '#4f46e5',
@@ -90,7 +91,7 @@ const App: React.FC = () => {
                 mimeType: f.mimeType
             }));
 
-            const result = await generatePresentation(inputText, theme, fileParts);
+            const result = await generatePresentation(inputText, theme, slideCount, fileParts);
             setPresentation(result);
             setCurrentSlideIndex(0);
         } catch (error: any) {
@@ -161,6 +162,8 @@ const App: React.FC = () => {
                                 fileInputRef={fileInputRef}
                                 isOpen={isSidebarOpen}
                                 onClose={() => setIsSidebarOpen(false)}
+                                slideCount={slideCount}
+                                setSlideCount={setSlideCount}
                             />
                         )}
                     </AnimatePresence>

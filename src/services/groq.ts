@@ -13,13 +13,14 @@ const getApiKey = () => {
 export async function generatePresentation(
     text: string,
     theme: string,
+    slideCount: number = 7,
     files: FilePart[] = []
 ): Promise<Presentation> {
     const apiKey = getApiKey();
     const isVisionNeeded = files.length > 0;
     const modelName = import.meta.env.VITE_GROQ_MODEL || (isVisionNeeded ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile");
 
-    const promptText = `Transform the provided input into a professional presentation. 
+    const promptText = `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
                     Theme style requested: ${theme}
                     User Text: ${text || "Please extract content from the attached files."}
                     
@@ -49,6 +50,7 @@ export async function generatePresentation(
             - If theme is 'minimal': Use concise, high-impact text.
             
             Structure the response as a Presentation object with "title" (string) and "slides" (array).
+            You MUST generate EXACTLY the number of slides requested in the user prompt. 
             Each slide has "id" (string), "layout" (TITLE, CONTENT, TWO_COLUMN, QUOTE), and "content" (object).
             "content" MUST include:
             - "title": (string)

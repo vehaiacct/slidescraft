@@ -28,13 +28,16 @@ interface SidebarProps {
     fileInputRef: React.RefObject<HTMLInputElement | null>;
     isOpen?: boolean;
     onClose?: () => void;
+    slideCount: number;
+    setSlideCount: (count: number) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
     inputText, setInputText,
     selectedFiles, handleFileChange, removeFile,
     theme, setTheme, onGenerate, isLoading,
-    fileInputRef, isOpen, onClose
+    fileInputRef, isOpen, onClose,
+    slideCount, setSlideCount
 }) => {
     const { user } = useUser();
     const themePresets: ThemePreset[] = [
@@ -99,6 +102,32 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <div className="absolute right-4 bottom-4 opacity-30 group-focus-within:opacity-100 transition-opacity">
                             <Sparkles size={16} className="text-indigo-400" />
                         </div>
+                    </div>
+                </motion.section>
+
+                <motion.section variants={itemVariants} className="space-y-4">
+                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Monitor size={12} className="text-indigo-500" /> Deck Magnitude
+                    </label>
+                    <div className="flex items-center gap-4 bg-slate-900/30 border border-white/5 rounded-2xl p-4">
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setSlideCount(Math.max(1, slideCount - 1))}
+                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex-center text-slate-400 hover:text-white transition-colors"
+                        >
+                            -
+                        </motion.button>
+                        <div className="flex-grow text-center">
+                            <span className="text-2xl font-black text-white">{slideCount}</span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-2">Slides</span>
+                        </div>
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setSlideCount(Math.min(20, slideCount + 1))}
+                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex-center text-slate-400 hover:text-white transition-colors"
+                        >
+                            +
+                        </motion.button>
                     </div>
                 </motion.section>
 
