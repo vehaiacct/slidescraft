@@ -115,7 +115,13 @@ const App: React.FC = () => {
 
     const handleExport = () => {
         if (presentation) {
-            exportToPPTX(presentation);
+            // Ensure the exported theme matches the current UI theme
+            const finalPresentation = {
+                ...presentation,
+                theme: theme,
+                customThemeConfig: theme === 'custom' ? customTheme : undefined
+            };
+            exportToPPTX(finalPresentation);
         }
     };
 
