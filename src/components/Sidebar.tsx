@@ -185,7 +185,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             className="hidden"
                             multiple
                             onChange={handleFileChange}
-                            accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            accept=".pdf,.docx,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         />
                     </div>
 
