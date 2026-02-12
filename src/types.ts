@@ -31,7 +31,7 @@ export interface CustomThemeConfig {
 
 export type ThemePreset = 'modern' | 'corporate' | 'creative' | 'minimal' | 'midnight' | 'nature' | 'sunset' | 'cyberpunk' | 'academic' | 'school' | 'custom';
 
-export type InputMode = 'topic' | 'content';
+export type InputMode = 'topic' | 'content' | 'file';
 
 export interface Presentation {
     title: string;

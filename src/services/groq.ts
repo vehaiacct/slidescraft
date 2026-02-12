@@ -28,14 +28,21 @@ export async function generatePresentation(
         .map(f => `Content from ${f.mimeType === 'application/pdf' ? 'PDF' : 'Word Document'}:\n${f.extractedText}`)
         .join('\n\n---\n\n');
 
-    let promptText = inputMode === 'topic'
-        ? `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
+    let promptText = "";
+    if (inputMode === 'topic') {
+        promptText = `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
            Theme style requested: ${theme}
-           User Topic: ${text || "Please extract content from the attached files."}`
-        : `Analyze the provided content and transform it into a professional presentation. 
+           User Topic: ${text || "Please extract content from the attached files."}`;
+    } else if (inputMode === 'file') {
+        promptText = `Generate a professional presentation with EXACTLY ${slideCount} slides based PRIMARILY on the content of the attached documents and images.
+           Theme style requested: ${theme}
+           Additional User Instructions: ${text || "None provided. Focus on the file content."}`;
+    } else { // 'content' mode
+        promptText = `Analyze the provided content and transform it into a professional presentation. 
            The slide count should be determined by the depth and length of the content provided (aim for completeness over a fixed count).
            Theme style requested: ${theme}
            User Content: ${text || (documentsText ? "Please use the content from the attached documents." : "Please extract content from the attached files.")}`;
+    }
 
     if (documentsText) {
         promptText += `\n\nADDITIONAL CONTEXT FROM UPLOADED DOCUMENTS:\n${documentsText}`;

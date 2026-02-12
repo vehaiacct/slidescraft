@@ -58,11 +58,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     const itemVariants = {
-        initial: { opacity: 0, y: 15, filter: 'blur(4px)' } as any,
+        initial: { opacity: 0, y: 15 } as any,
         animate: {
             opacity: 1,
             y: 0,
-            filter: 'blur(0px)',
             transition: { duration: 0.4, ease: "easeOut" }
         } as any
     };
@@ -102,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <FileText size={12} className="text-indigo-500" /> Content Logic
                         </label>
                         <div className="flex bg-slate-900/50 p-1 rounded-xl border border-white/5">
-                            {(['topic', 'content'] as const).map((mode) => (
+                            {(['topic', 'content', 'file'] as const).map((mode) => (
                                 <button
                                     key={mode}
                                     onClick={() => setInputMode(mode)}
@@ -116,27 +115,92 @@ const Sidebar: React.FC<SidebarProps> = ({
                             ))}
                         </div>
                     </div>
-                    <div className="relative group">
-                        <textarea
-                            className="w-full h-36 md:h-44 bg-slate-900/30 border border-white/5 rounded-2xl p-5 text-sm md:text-base text-slate-100 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900/50 transition-all resize-none shadow-inner"
-                            placeholder={inputMode === 'topic' ? "Enter your presentation topic..." : "Paste your detailed content/notes here..."}
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                        />
-                        <div className="absolute right-4 bottom-4 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                            <Sparkles size={16} className="text-indigo-400" />
-                        </div>
-                    </div>
+
+                    <AnimatePresence mode="wait">
+                        {inputMode === 'file' ? (
+                            <motion.div
+                                key="file-mode"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                                className="space-y-4"
+                            >
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="group border border-dashed border-white/10 rounded-2xl p-6 md:p-8 flex-center flex-col cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/30 transition-all bg-black/20"
+                                >
+                                    <div className="w-10 h-10 bg-slate-800 rounded-full flex-center mb-3 group-hover:scale-110 transition-transform">
+                                        <Upload size={18} className="text-slate-400" />
+                                    </div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upload Assets</p>
+                                    <p className="text-[10px] text-slate-600 mt-1">PDF, DOCX, or Images</p>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        multiple
+                                        onChange={handleFileChange}
+                                        accept=".pdf,.docx,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                    />
+                                </div>
+
+                                <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
+                                    {selectedFiles.map((file) => (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            key={file.id}
+                                            className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl group"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {file.mimeType.startsWith('image/') ? (
+                                                    <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
+                                                        <img src={`data:${file.mimeType};base64,${file.data}`} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <File size={14} className="text-indigo-400" />
+                                                )}
+                                                <span className="text-xs font-medium truncate max-w-[150px]">{file.name}</span>
+                                            </div>
+                                            <button onClick={() => removeFile(file.id)} className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-red-400 transition-colors">
+                                                <X size={14} />
+                                            </button>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="text-mode"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                                className="relative group"
+                            >
+                                <textarea
+                                    className="w-full h-44 md:h-52 bg-slate-900/30 border border-white/5 rounded-2xl p-5 text-sm md:text-base text-slate-100 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900/50 transition-all resize-none shadow-inner"
+                                    placeholder={inputMode === 'topic' ? "Enter your presentation topic..." : "Paste your detailed content/notes here..."}
+                                    value={inputText}
+                                    onChange={(e) => setInputText(e.target.value)}
+                                />
+                                <div className="absolute right-4 bottom-4 opacity-30 group-focus-within:opacity-100 transition-opacity">
+                                    <Sparkles size={16} className="text-indigo-400" />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.section>
 
                 <AnimatePresence mode="wait">
-                    {inputMode === 'topic' && (
+                    {inputMode !== 'content' && (
                         <motion.section
                             key="slide-count"
-                            initial={{ opacity: 0, height: 0, marginTop: 0, filter: 'blur(4px)' }}
-                            animate={{ opacity: 1, height: 'auto', marginTop: 32, filter: 'blur(0px)' }}
-                            exit={{ opacity: 0, height: 0, marginTop: 0, filter: 'blur(4px)' }}
-                            transition={{ duration: 0.4, ease: "easeOut" }}
+                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                            animate={{ opacity: 1, height: 'auto', marginTop: 32 }}
+                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
                             className="space-y-4 overflow-hidden"
                         >
                             <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -165,49 +229,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </motion.section>
                     )}
                 </AnimatePresence>
-
-                <motion.section variants={itemVariants} className="space-y-4">
-                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Upload size={12} className="text-indigo-500" /> Source Files
-                    </label>
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="group border border-dashed border-white/10 rounded-2xl p-6 md:p-8 flex-center flex-col cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/30 transition-all bg-black/20"
-                    >
-                        <div className="w-10 h-10 bg-slate-800 rounded-full flex-center mb-3 group-hover:scale-110 transition-transform">
-                            <Upload size={18} className="text-slate-400" />
-                        </div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upload Assets</p>
-                        <p className="text-[10px] text-slate-600 mt-1">PDF, DOCX, or Images</p>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            multiple
-                            onChange={handleFileChange}
-                            accept=".pdf,.docx,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        {selectedFiles.map((file) => (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                key={file.id}
-                                className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <File size={14} className="text-indigo-400" />
-                                    <span className="text-xs font-medium truncate max-w-[150px]">{file.name}</span>
-                                </div>
-                                <button onClick={() => removeFile(file.id)} className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-red-400 transition-colors">
-                                    <X size={14} />
-                                </button>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.section>
 
                 <motion.section variants={itemVariants} className="space-y-4">
                     <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -240,7 +261,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
                 className="mt-10"
             >
                 <motion.button
@@ -254,7 +274,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     ) : (
                         <>
-                            <span>Project Launch</span>
+                            <span>Create Presentation</span>
                             <ChevronRight size={18} />
                         </>
                     )}
