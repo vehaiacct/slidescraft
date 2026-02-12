@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
-import { Presentation, ThemePreset, CustomThemeConfig, FilePart, SlideContent } from './types';
+import { Presentation, ThemePreset, CustomThemeConfig, FilePart, SlideContent, InputMode } from './types';
 import { generatePresentation } from './services/groq';
 import { exportToPPTX } from './services/export';
 import Sidebar from './components/Sidebar';
@@ -17,7 +17,8 @@ import {
     MessageSquare,
     Menu,
     X,
-    Sparkles
+    Sparkles,
+    Trash2
 } from 'lucide-react';
 
 interface SelectedFile extends FilePart {
@@ -35,6 +36,7 @@ const App: React.FC = () => {
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
     const [theme, setTheme] = useState<ThemePreset>('modern');
     const [slideCount, setSlideCount] = useState(7);
+    const [inputMode, setInputMode] = useState<InputMode>('topic');
     const [customTheme] = useState<CustomThemeConfig>({
         primaryColor: '#6366f1',
         secondaryColor: '#4f46e5',
@@ -91,7 +93,7 @@ const App: React.FC = () => {
                 mimeType: f.mimeType
             }));
 
-            const result = await generatePresentation(inputText, theme, slideCount, fileParts);
+            const result = await generatePresentation(inputText, theme, slideCount, fileParts, inputMode);
             setPresentation(result);
             setCurrentSlideIndex(0);
         } catch (error: any) {
@@ -131,6 +133,26 @@ const App: React.FC = () => {
         }
     };
 
+    const handleDeleteSlide = () => {
+        if (!presentation) return;
+
+        const newSlides = presentation.slides.filter((_, i) => i !== currentSlideIndex);
+        if (newSlides.length === 0) {
+            setPresentation(null);
+            return;
+        }
+
+        setPresentation({
+            ...presentation,
+            slides: newSlides
+        });
+
+        // Safe index update
+        if (currentSlideIndex >= newSlides.length) {
+            setCurrentSlideIndex(newSlides.length - 1);
+        }
+    };
+
     if (!isLoaded) {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-center">
@@ -144,7 +166,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30 overflow-hidden font-sans">
+        <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/40 selection:text-white overflow-hidden font-sans">
             <SignedIn>
                 <div className="flex h-screen overflow-hidden">
                     <AnimatePresence mode="wait">
@@ -164,6 +186,8 @@ const App: React.FC = () => {
                                 onClose={() => setIsSidebarOpen(false)}
                                 slideCount={slideCount}
                                 setSlideCount={setSlideCount}
+                                inputMode={inputMode}
+                                setInputMode={setInputMode}
                             />
                         )}
                     </AnimatePresence>
@@ -197,7 +221,8 @@ const App: React.FC = () => {
                                     <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex-center shadow-lg shadow-indigo-500/20">
                                         <Sparkles size={18} className="text-white md:w-5 md:h-5" />
                                     </div>
-                                    <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block">SlideCraft<span className="text-indigo-400">AI</span></span>
+                                    <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block font-sans">SlideCraft<span className="text-indigo-400">AI</span></span>
+                                    <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full text-[8px] font-black uppercase tracking-widest border border-indigo-500/20">v2.0-max</span>
                                 </div>
                             </div>
 
@@ -259,6 +284,15 @@ const App: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-3">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={handleDeleteSlide}
+                                                        className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl hover:bg-red-500/20 transition-all text-red-400"
+                                                        title="Omit Slide"
+                                                    >
+                                                        <Trash2 size={20} />
+                                                    </motion.button>
                                                     <motion.button
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
@@ -363,17 +397,20 @@ const App: React.FC = () => {
                                             </div>
 
                                             {/* Scroll Progress Indicators */}
-                                            <footer className="flex justify-center gap-2 md:gap-4 overflow-x-auto py-6 no-scrollbar">
+                                            <footer className="flex justify-center gap-3 md:gap-4 overflow-x-auto py-8 no-scrollbar">
                                                 {presentation.slides.map((_, idx) => (
                                                     <motion.button
                                                         key={idx}
                                                         initial={false}
                                                         animate={{
-                                                            width: currentSlideIndex === idx ? 40 : 8,
-                                                            backgroundColor: currentSlideIndex === idx ? '#6366f1' : '#1e293b'
+                                                            width: currentSlideIndex === idx ? 48 : 12,
+                                                            height: 8,
+                                                            backgroundColor: currentSlideIndex === idx ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                                                            boxShadow: currentSlideIndex === idx ? '0 0 20px var(--primary-glow)' : 'none'
                                                         }}
+                                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                                         onClick={() => setCurrentSlideIndex(idx)}
-                                                        className="h-2 rounded-full transition-all duration-300"
+                                                        className="rounded-full cursor-pointer hover:bg-white/20 transition-colors"
                                                     />
                                                 ))}
                                             </footer>

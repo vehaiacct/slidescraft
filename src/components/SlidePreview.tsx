@@ -135,7 +135,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ slide, theme, customThemeCo
                                 contentEditable={!isPreview}
                                 suppressContentEditableWarning
                                 onBlur={(e) => onUpdate?.({ title: e.currentTarget.textContent || '' })}
-                                className={`${isPreview ? 'text-[10px]' : 'text-3xl md:text-5xl lg:text-7xl'} font-extrabold mb-4 lg:mb-6 tracking-tight leading-tight outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
+                                className={`${isPreview ? 'text-[10px]' : 'text-4xl md:text-6xl lg:text-8xl'} font-black mb-6 md:mb-10 tracking-tight leading-[1.1] outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-2`}
                             >
                                 {content.title}
                             </motion.h1>
@@ -172,9 +172,9 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ slide, theme, customThemeCo
                                     <motion.li
                                         key={i}
                                         variants={itemFadeIn}
-                                        className={`${isPreview ? 'text-[5px]' : 'text-[10px] md:text-lg lg:text-2xl'} flex items-start gap-2 lg:gap-4`}
+                                        className={`${isPreview ? 'text-[5px]' : 'text-xs md:text-xl lg:text-3xl'} flex items-start gap-3 lg:gap-6 group/item transition-all duration-300`}
                                     >
-                                        <span className="mt-1.5 lg:mt-2 block w-1 h-1 lg:w-2 lg:h-2 rounded-full bg-current flex-shrink-0 opacity-50" />
+                                        <span className="mt-2.5 lg:mt-4 block w-1.5 h-1.5 lg:w-3 lg:h-3 bg-indigo-500 rounded-sm flex-shrink-0 group-hover/item:scale-125 transition-transform" />
                                         <div
                                             contentEditable={!isPreview}
                                             suppressContentEditableWarning

@@ -1,4 +1,4 @@
-import { Presentation, SlideLayout, FilePart } from "../types";
+import { Presentation, SlideLayout, FilePart, InputMode } from "../types";
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -14,17 +14,23 @@ export async function generatePresentation(
     text: string,
     theme: string,
     slideCount: number = 7,
-    files: FilePart[] = []
+    files: FilePart[] = [],
+    inputMode: InputMode = 'topic'
 ): Promise<Presentation> {
     const apiKey = getApiKey();
     const isVisionNeeded = files.length > 0;
     const modelName = import.meta.env.VITE_GROQ_MODEL || (isVisionNeeded ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile");
 
-    const promptText = `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
-                    Theme style requested: ${theme}
-                    User Text: ${text || "Please extract content from the attached files."}
-                    
-                    Respond ONLY with the JSON object. No markdown, no filler.`;
+    let promptText = inputMode === 'topic'
+        ? `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
+           Theme style requested: ${theme}
+           User Topic: ${text || "Please extract content from the attached files."}`
+        : `Analyze the provided content and transform it into a professional presentation. 
+           The slide count should be determined by the depth and length of the content provided (aim for completeness over a fixed count).
+           Theme style requested: ${theme}
+           User Content: ${text || "Please extract content from the attached files."}`;
+
+    promptText += `\n\nRespond ONLY with the JSON object. No markdown, no filler.`;
 
     const userMessageContent = isVisionNeeded
         ? [
