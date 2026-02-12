@@ -82,7 +82,6 @@ export async function generatePresentation(
             - "points": (string array, optional)
             - "leftColumn": (string array, optional)
             - "rightColumn": (string array, optional)
-            - "speakerNotes": (string) A detailed script for the presenter (3-4 sentences).
             - "imagePrompt": (string) A highly descriptive prompt for a cinematic background image. Be specific about style, lighting, and elements (e.g. "aerial view of a lush rainforest at sunrise, hyper-realistic, 8k, soft lighting"). Avoid text in images.`
         },
         {
