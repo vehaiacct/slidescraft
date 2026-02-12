@@ -23,12 +23,12 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
 -- Policies for Profiles
-CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid()::text = id);
+CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid()::text = id);
 CREATE POLICY "Public profiles are viewable" ON profiles FOR SELECT USING (TRUE); -- Needed for search/transfer
 
 -- Policies for Transactions
-CREATE POLICY "Users can view their own transactions" ON transactions FOR SELECT USING (sender_id = auth.uid() OR receiver_id = auth.uid());
+CREATE POLICY "Users can view their own transactions" ON transactions FOR SELECT USING (sender_id = auth.uid()::text OR receiver_id = auth.uid()::text);
 
 -- Indexing for performance
 CREATE INDEX idx_profiles_username ON profiles(username);
