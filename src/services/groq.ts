@@ -18,8 +18,9 @@ export async function generatePresentation(
     inputMode: InputMode = 'topic'
 ): Promise<Presentation> {
     const apiKey = getApiKey();
-    const isVisionNeeded = files.length > 0;
-    const modelName = import.meta.env.VITE_GROQ_MODEL || (isVisionNeeded ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile");
+    const imageFiles = files.filter(f => f.mimeType.startsWith('image/'));
+    const isVisionNeeded = imageFiles.length > 0;
+    const modelName = import.meta.env.VITE_GROQ_MODEL || (isVisionNeeded ? "llama-3.2-11b-vision-instant" : "llama-3.3-70b-versatile");
 
     // Aggregate extracted text from documents
     const documentsText = files
@@ -41,8 +42,6 @@ export async function generatePresentation(
     }
 
     promptText += `\n\nRespond ONLY with the JSON object. No markdown, no filler.`;
-
-    const imageFiles = files.filter(f => f.mimeType.startsWith('image/'));
 
     const userMessageContent = imageFiles.length > 0
         ? [
