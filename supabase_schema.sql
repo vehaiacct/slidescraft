@@ -24,11 +24,13 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
 -- Policies for Profiles
 CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid()::text = id);
+CREATE POLICY "Allow profile creation" ON profiles FOR INSERT WITH CHECK (true); -- Public insert, validated by Clerk on app side
 CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid()::text = id);
 CREATE POLICY "Public profiles are viewable" ON profiles FOR SELECT USING (TRUE); -- Needed for search/transfer
 
 -- Policies for Transactions
 CREATE POLICY "Users can view their own transactions" ON transactions FOR SELECT USING (sender_id = auth.uid()::text OR receiver_id = auth.uid()::text);
+CREATE POLICY "Users can insert transactions" ON transactions FOR INSERT WITH CHECK (sender_id = auth.uid()::text OR receiver_id = auth.uid()::text);
 
 -- Indexing for performance
 CREATE INDEX idx_profiles_username ON profiles(username);

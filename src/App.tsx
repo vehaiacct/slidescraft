@@ -319,6 +319,15 @@ const App: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-4">
+                                {userProfile && (
+                                    <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl border border-white/10">
+                                        <Database size={16} className="text-indigo-400" />
+                                        <div className="text-right">
+                                            <p className="text-xs font-bold text-white leading-none">{userProfile.credits} Credits</p>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-1">@{userProfile.username}</p>
+                                        </div>
+                                    </div>
+                                )}
                                 {userProfile?.is_admin && (
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
