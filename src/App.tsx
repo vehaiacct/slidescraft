@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk
 import { Presentation, ThemePreset, CustomThemeConfig, FilePart, SlideContent, InputMode } from './types';
 import { generatePresentation } from './services/groq';
 import { exportToPPTX } from './services/export';
+import { extractTextFromPDF, extractTextFromDocx } from './services/document';
 import Sidebar from './components/Sidebar';
 import SlidePreview from './components/SlidePreview';
 import {
@@ -61,20 +62,35 @@ const App: React.FC = () => {
         const files = e.target.files;
         if (!files) return;
 
+        setIsLoading(true); // Show loading while parsing
         const newFiles: SelectedFile[] = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.size > 10 * 1024 * 1024) continue;
 
-            const base64 = await fileToBase64(file);
-            newFiles.push({
-                id: Math.random().toString(36).substr(2, 9),
-                name: file.name,
-                mimeType: file.type,
-                data: base64
-            });
+            try {
+                let extractedText = undefined;
+                if (file.type === 'application/pdf') {
+                    extractedText = await extractTextFromPDF(file);
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    extractedText = await extractTextFromDocx(file);
+                }
+
+                const base64 = await fileToBase64(file);
+                newFiles.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: file.name,
+                    mimeType: file.type,
+                    data: base64,
+                    extractedText
+                });
+            } catch (error) {
+                console.error(`Error processing file ${file.name}:`, error);
+                alert(`Failed to process ${file.name}. It might be corrupted or in an unsupported format.`);
+            }
         }
         setSelectedFiles(prev => [...prev, ...newFiles]);
+        setIsLoading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -221,8 +237,7 @@ const App: React.FC = () => {
                                     <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex-center shadow-lg shadow-indigo-500/20">
                                         <Sparkles size={18} className="text-white md:w-5 md:h-5" />
                                     </div>
-                                    <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block font-sans">SlideCraft<span className="text-indigo-400">AI</span></span>
-                                    <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full text-[8px] font-black uppercase tracking-widest border border-indigo-500/20">v2.0-max</span>
+                                    <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block">SlideCraft<span className="text-indigo-400">AI</span></span>
                                 </div>
                             </div>
 

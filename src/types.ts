@@ -43,4 +43,5 @@ export interface Presentation {
 export interface FilePart {
     data: string;
     mimeType: string;
+    extractedText?: string;
 }

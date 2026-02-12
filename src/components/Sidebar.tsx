@@ -82,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <div>
                         <h1 className="text-xl md:text-2xl font-black tracking-tighter gradient-text leading-none">SlideCraft<span className="text-indigo-400">AI</span></h1>
-                        <p className="text-[8px] md:text-[10px] text-red-500 font-bold tracking-[0.2em] uppercase bg-red-500/10 px-2 py-0.5 rounded-full inline-block mt-1 animate-pulse">V2.0 PRO MAX ACTIVE</p>
+                        <p className="text-[8px] md:text-[10px] text-indigo-400 font-bold tracking-[0.2em] uppercase">Premium Deck Engine</p>
                     </div>
                 </div>
 
@@ -179,7 +179,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upload Assets</p>
                         <p className="text-[10px] text-slate-600 mt-1">PDF, DOCX, or Images</p>
-                        <input type="file" ref={fileInputRef} className="hidden" multiple onChange={handleFileChange} />
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            multiple
+                            onChange={handleFileChange}
+                            accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        />
                     </div>
 
                     <div className="space-y-2">

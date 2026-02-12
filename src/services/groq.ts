@@ -21,6 +21,12 @@ export async function generatePresentation(
     const isVisionNeeded = files.length > 0;
     const modelName = import.meta.env.VITE_GROQ_MODEL || (isVisionNeeded ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile");
 
+    // Aggregate extracted text from documents
+    const documentsText = files
+        .filter(f => f.extractedText)
+        .map(f => `Content from ${f.mimeType === 'application/pdf' ? 'PDF' : 'Word Document'}:\n${f.extractedText}`)
+        .join('\n\n---\n\n');
+
     let promptText = inputMode === 'topic'
         ? `Transform the provided input into a professional presentation with EXACTLY ${slideCount} slides. 
            Theme style requested: ${theme}
@@ -28,14 +34,20 @@ export async function generatePresentation(
         : `Analyze the provided content and transform it into a professional presentation. 
            The slide count should be determined by the depth and length of the content provided (aim for completeness over a fixed count).
            Theme style requested: ${theme}
-           User Content: ${text || "Please extract content from the attached files."}`;
+           User Content: ${text || (documentsText ? "Please use the content from the attached documents." : "Please extract content from the attached files.")}`;
+
+    if (documentsText) {
+        promptText += `\n\nADDITIONAL CONTEXT FROM UPLOADED DOCUMENTS:\n${documentsText}`;
+    }
 
     promptText += `\n\nRespond ONLY with the JSON object. No markdown, no filler.`;
 
-    const userMessageContent = isVisionNeeded
+    const imageFiles = files.filter(f => f.mimeType.startsWith('image/'));
+
+    const userMessageContent = imageFiles.length > 0
         ? [
             { type: "text", text: promptText },
-            ...files.map(f => ({
+            ...imageFiles.map(f => ({
                 type: "image_url",
                 image_url: {
                     url: `data:${f.mimeType};base64,${f.data}`
