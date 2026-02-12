@@ -1,9 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
+// Use the bundled worker instead of CDN for better reliability
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import mammoth from 'mammoth';
 
-// Set up PDF.js worker
-// We use a CDN for the worker to avoid complex vite build issues with workers
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export async function extractTextFromPDF(file: File): Promise<string> {
     const arrayBuffer = await file.arrayBuffer();

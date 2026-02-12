@@ -70,9 +70,19 @@ const App: React.FC = () => {
 
             try {
                 let extractedText = undefined;
-                if (file.type === 'application/pdf') {
+                const fileName = file.name.toLowerCase();
+                const mimeType = file.type;
+
+                console.log(`Processing file: ${file.name}, MIME: ${mimeType}`);
+
+                if (mimeType === 'application/pdf' || fileName.endsWith('.pdf')) {
+                    console.log('Detected PDF, extracting...');
                     extractedText = await extractTextFromPDF(file);
-                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                } else if (
+                    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                    fileName.endsWith('.docx')
+                ) {
+                    console.log('Detected DOCX, extracting...');
                     extractedText = await extractTextFromDocx(file);
                 }
 
@@ -80,13 +90,13 @@ const App: React.FC = () => {
                 newFiles.push({
                     id: Math.random().toString(36).substr(2, 9),
                     name: file.name,
-                    mimeType: file.type,
+                    mimeType: mimeType || (fileName.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'),
                     data: base64,
                     extractedText
                 });
-            } catch (error) {
-                console.error(`Error processing file ${file.name}:`, error);
-                alert(`Failed to process ${file.name}. It might be corrupted or in an unsupported format.`);
+            } catch (error: any) {
+                console.error(`Detailed error for ${file.name}:`, error);
+                alert(`Error processing "${file.name}": ${error.message || "Unknown error"}. Check console for details.`);
             }
         }
         setSelectedFiles(prev => [...prev, ...newFiles]);
