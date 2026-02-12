@@ -10,10 +10,13 @@ import {
     ChevronRight,
     Monitor,
     Layout,
-    Check
+    Check,
+    Database,
+    Send
 } from 'lucide-react';
 import { ThemePreset, InputMode } from '../types';
 import { useUser } from '@clerk/clerk-react';
+import { UserProfile } from '../services/supabase';
 
 interface SidebarProps {
     inputText: string;
@@ -32,6 +35,8 @@ interface SidebarProps {
     setSlideCount: (count: number) => void;
     inputMode: InputMode;
     setInputMode: (mode: InputMode) => void;
+    userProfile: UserProfile | null;
+    onOpenTransfer: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -40,7 +45,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     theme, setTheme, onGenerate, isLoading,
     fileInputRef, isOpen, onClose,
     slideCount, setSlideCount,
-    inputMode, setInputMode
+    inputMode, setInputMode,
+    userProfile,
+    onOpenTransfer
 }) => {
     const { user } = useUser();
     const themePresets: ThemePreset[] = [
@@ -282,15 +289,32 @@ const Sidebar: React.FC<SidebarProps> = ({
             </motion.div>
 
             {user && (
-                <div className="mt-auto pt-8 border-t border-white/5 flex items-center gap-4">
-                    <div className="relative">
-                        <img src={user.imageUrl} className="w-10 h-10 md:w-11 md:h-11 rounded-1.25rem md:rounded-xl border border-white/10" alt="Avatar" />
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-slate-950 rounded-full" />
+                <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <img src={user.imageUrl} className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-white/10" alt="Avatar" />
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-slate-950 rounded-full" />
+                        </div>
+                        <div>
+                            <p className="text-xs md:text-sm font-black text-white">@{userProfile?.username || user.username}</p>
+                            <div className="flex items-center gap-2">
+                                <Database size={10} className="text-indigo-400" />
+                                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest leading-none">
+                                    {userProfile?.credits ?? 0} Credits
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs md:text-sm font-black white-space-nowrap">{user.fullName || user.username}</p>
-                        <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Premium Active</p>
-                    </div>
+
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={onOpenTransfer}
+                        className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
+                        title="Transfer credits"
+                    >
+                        <Send size={16} />
+                    </motion.button>
                 </div>
             )}
         </motion.aside>

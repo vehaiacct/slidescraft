@@ -19,8 +19,15 @@ import {
     Menu,
     X,
     Sparkles,
-    Trash2
+    Trash2,
+    Database,
+    Shield
 } from 'lucide-react';
+import { getUserProfile } from './services/user';
+import Onboarding from './components/Onboarding';
+import TransferCreditsModal from './components/TransferCreditsModal';
+import AdminDashboard from './components/AdminDashboard';
+import { UserProfile } from './services/supabase';
 
 interface SelectedFile extends FilePart {
     name: string;
@@ -38,6 +45,10 @@ const App: React.FC = () => {
     const [theme, setTheme] = useState<ThemePreset>('modern');
     const [slideCount, setSlideCount] = useState(7);
     const [inputMode, setInputMode] = useState<InputMode>('topic');
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [isFetchingProfile, setIsFetchingProfile] = useState(false);
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
     const [customTheme] = useState<CustomThemeConfig>({
         primaryColor: '#6366f1',
         secondaryColor: '#4f46e5',
@@ -45,6 +56,25 @@ const App: React.FC = () => {
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const refreshProfile = async () => {
+        if (user?.id) {
+            const profile = await getUserProfile(user.id);
+            setUserProfile(profile);
+        }
+    };
+
+    React.useEffect(() => {
+        const fetchProfile = async () => {
+            if (user?.id) {
+                setIsFetchingProfile(true);
+                const profile = await getUserProfile(user.id);
+                setUserProfile(profile);
+                setIsFetchingProfile(false);
+            }
+        };
+        fetchProfile();
+    }, [user?.id]);
 
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -110,6 +140,13 @@ const App: React.FC = () => {
 
     const handleGenerate = async () => {
         if (!inputText.trim() && selectedFiles.length === 0) return;
+
+        // Credit Check
+        if (userProfile && userProfile.credits < slideCount) {
+            alert(`You need ${slideCount} credits to generate this deck, but you only have ${userProfile.credits}.`);
+            return;
+        }
+
         setIsLoading(true);
         if (window.innerWidth < 1024) setIsSidebarOpen(false);
 
@@ -122,6 +159,14 @@ const App: React.FC = () => {
             const result = await generatePresentation(inputText, theme, slideCount, fileParts, inputMode);
             setPresentation(result);
             setCurrentSlideIndex(0);
+
+            // Deduct credits in DB
+            if (userProfile && user?.id) {
+                const { supabase } = await import('./services/supabase');
+                await supabase.from('profiles').update({ credits: userProfile.credits - result.slides.length }).eq('id', user.id);
+                await supabase.from('transactions').insert([{ sender_id: user.id, amount: result.slides.length, type: 'generation' }]);
+                refreshProfile();
+            }
         } catch (error: any) {
             console.error("Failed to generate:", error);
             alert(`AI generation failed: ${error.message || "Unknown error"}`);
@@ -214,9 +259,24 @@ const App: React.FC = () => {
                                 setSlideCount={setSlideCount}
                                 inputMode={inputMode}
                                 setInputMode={setInputMode}
+                                userProfile={userProfile}
+                                onOpenTransfer={() => setIsTransferModalOpen(true)}
                             />
                         )}
                     </AnimatePresence>
+
+                    <TransferCreditsModal
+                        isOpen={isTransferModalOpen}
+                        onClose={() => setIsTransferModalOpen(false)}
+                        currentBalance={userProfile?.credits || 0}
+                        senderId={user?.id || ''}
+                        onSuccess={refreshProfile}
+                    />
+
+                    <AdminDashboard
+                        isOpen={isAdminDashboardOpen}
+                        onClose={() => setIsAdminDashboardOpen(false)}
+                    />
 
                     {/* Mobile Backdrop */}
                     <AnimatePresence>
@@ -231,9 +291,16 @@ const App: React.FC = () => {
                         )}
                     </AnimatePresence>
 
-                    <main className="flex-grow flex flex-col h-screen relative bg-[radial-gradient(circle_at_top_right,_var(--bg-sidebar),_transparent)]">
-                        {/* Improved Header */}
-                        <header className="p-4 md:p-6 flex items-center justify-between z-30">
+                    <main className="flex-grow flex flex-col h-screen relative bg-[radial-gradient(circle_at_top_right,_var(--bg-sidebar),_transparent)] overflow-hidden">
+                        {isSignedIn && !userProfile && !isFetchingProfile && (
+                            <Onboarding
+                                userId={user.id}
+                                email={user.primaryEmailAddress?.emailAddress || ''}
+                                onComplete={(profile) => setUserProfile(profile)}
+                            />
+                        )}
+
+                        <header className="h-20 md:h-24 px-6 md:px-10 flex items-center justify-between glass border-b border-white/5 sticky top-0 z-40 backdrop-blur-3xl shrink-0">
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
@@ -252,6 +319,17 @@ const App: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-4">
+                                {userProfile?.is_admin && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setIsAdminDashboardOpen(true)}
+                                        className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
+                                        title="Admin Console"
+                                    >
+                                        <Shield size={20} />
+                                    </motion.button>
+                                )}
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                     <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: 'w-9 h-9 md:w-11 md:h-11 border-2 border-white/5 hover:border-indigo-500/50 transition-colors' } }} />
                                 </motion.div>
