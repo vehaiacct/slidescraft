@@ -316,6 +316,13 @@ const App: React.FC = () => {
                                     </div>
                                     <span className="text-lg md:text-xl font-black tracking-tight hidden sm:block">SlideCraft<span className="text-indigo-400">AI</span></span>
                                 </div>
+                                {/* Mobile credit badge */}
+                                {userProfile && (
+                                    <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                                        <Database size={12} className="text-indigo-400" />
+                                        <span className="text-xs font-bold text-white">{userProfile.credits}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-4">
