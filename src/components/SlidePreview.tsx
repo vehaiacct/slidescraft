@@ -49,9 +49,11 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ slide, theme, customThemeCo
             case 'modern':
             default:
                 return {
-                    background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-                    color: '#ffffff',
-                    boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)'
+                    background: 'radial-gradient(circle at top right, #1c1917, #0c0a09)',
+                    color: '#fafaf9',
+                    fontFamily: '"Plus Jakarta Sans", sans-serif',
+                    boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                 };
         }
     };

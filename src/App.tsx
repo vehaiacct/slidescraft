@@ -441,7 +441,7 @@ const App: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex-grow flex flex-col lg:flex-row gap-8 items-start relative pb-10">
+                                            <div className="flex-grow flex flex-col lg:flex-row gap-8 items-center justify-center relative pb-10">
                                                 {/* Desktop Nav Controls */}
                                                 <div className="hidden lg:block absolute -left-20 top-1/2 -translate-y-1/2">
                                                     <motion.button
