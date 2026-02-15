@@ -27,6 +27,7 @@ import { getUserProfile } from './services/user';
 import Onboarding from './components/Onboarding';
 import TransferCreditsModal from './components/TransferCreditsModal';
 import AdminDashboard from './components/AdminDashboard';
+import CreditConfirmationModal from './components/CreditConfirmationModal';
 import { UserProfile } from './services/supabase';
 
 interface SelectedFile extends FilePart {
@@ -49,6 +50,7 @@ const App: React.FC = () => {
     const [isFetchingProfile, setIsFetchingProfile] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
+    const [isCreditConfirmOpen, setIsCreditConfirmOpen] = useState(false);
     const [customTheme] = useState<CustomThemeConfig>({
         primaryColor: '#6366f1',
         secondaryColor: '#4f46e5',
@@ -138,15 +140,14 @@ const App: React.FC = () => {
         setSelectedFiles(prev => prev.filter(f => f.id !== id));
     };
 
-    const handleGenerate = async () => {
+    const handleGenerateClick = () => {
         if (!inputText.trim() && selectedFiles.length === 0) return;
+        // Show confirmation modal
+        setIsCreditConfirmOpen(true);
+    };
 
-        // Credit Check
-        if (userProfile && userProfile.credits < slideCount) {
-            alert(`You need ${slideCount} credits to generate this deck, but you only have ${userProfile.credits}.`);
-            return;
-        }
-
+    const handleGenerate = async () => {
+        setIsCreditConfirmOpen(false);
         setIsLoading(true);
         if (window.innerWidth < 1024) setIsSidebarOpen(false);
 
@@ -276,6 +277,14 @@ const App: React.FC = () => {
                     <AdminDashboard
                         isOpen={isAdminDashboardOpen}
                         onClose={() => setIsAdminDashboardOpen(false)}
+                    />
+
+                    <CreditConfirmationModal
+                        isOpen={isCreditConfirmOpen}
+                        onClose={() => setIsCreditConfirmOpen(false)}
+                        onConfirm={handleGenerate}
+                        slideCount={slideCount}
+                        currentBalance={userProfile?.credits || 0}
                     />
 
                     {/* Mobile Backdrop */}

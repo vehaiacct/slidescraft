@@ -48,13 +48,13 @@ export function exportToPPTX(presentation: Presentation) {
                     x: 1, y: 2, w: 8, h: 1.5,
                     fontSize: 44, bold: true, align: 'center',
                     color: colors.text
-                });
+                } as any);
                 if (content.subtitle) {
                     pptSlide.addText(content.subtitle, {
                         x: 1, y: 3.5, w: 8, h: 1,
                         fontSize: 24, align: 'center',
                         color: colors.text, transparency: 30
-                    });
+                    } as any);
                 }
                 break;
 
@@ -64,13 +64,13 @@ export function exportToPPTX(presentation: Presentation) {
                     fontSize: 32, bold: true,
                     color: colors.text,
                     background: { fill: colors.accent }
-                });
+                } as any);
                 if (content.points) {
                     pptSlide.addText(content.points.join('\n'), {
                         x: 0.5, y: 1.5, w: 9, h: 4,
                         fontSize: 18, bullet: true,
                         color: colors.text
-                    });
+                    } as any);
                 }
                 break;
 
@@ -79,20 +79,20 @@ export function exportToPPTX(presentation: Presentation) {
                     x: 0.5, y: 0.5, w: 9, h: 1,
                     fontSize: 32, bold: true,
                     color: colors.text
-                });
+                } as any);
                 if (content.leftColumn) {
                     pptSlide.addText(content.leftColumn.join('\n'), {
                         x: 0.5, y: 1.5, w: 4.25, h: 4,
                         fontSize: 16, bullet: true,
                         color: colors.text
-                    });
+                    } as any);
                 }
                 if (content.rightColumn) {
                     pptSlide.addText(content.rightColumn.join('\n'), {
                         x: 5.25, y: 1.5, w: 4.25, h: 4,
                         fontSize: 16, bullet: true,
                         color: colors.text
-                    });
+                    } as any);
                 }
                 break;
 
@@ -101,13 +101,13 @@ export function exportToPPTX(presentation: Presentation) {
                     x: 1, y: 2, w: 8, h: 2,
                     fontSize: 36, italic: true, align: 'center',
                     color: colors.text
-                });
+                } as any);
                 if (content.subtitle) {
                     pptSlide.addText(`— ${content.subtitle}`, {
                         x: 1, y: 4, w: 8, h: 0.5,
                         fontSize: 20, align: 'right',
                         color: colors.text
-                    });
+                    } as any);
                 }
                 break;
         }

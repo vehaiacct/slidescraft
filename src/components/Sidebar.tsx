@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
     FileText,
     Upload,
@@ -55,22 +55,22 @@ const Sidebar: React.FC<SidebarProps> = ({
         'midnight', 'cyberpunk', 'school', 'custom'
     ];
 
-    const sidebarVariants = {
-        open: { x: 0, opacity: 1, transition: { type: 'spring' as const, damping: 25, stiffness: 200 } },
-        closed: { x: '-100%', opacity: 0, transition: { type: 'spring' as const, damping: 25, stiffness: 200 } }
+    const sidebarVariants: Variants = {
+        open: { x: 0, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 200 } },
+        closed: { x: '-100%', opacity: 0, transition: { type: 'spring', damping: 25, stiffness: 200 } }
     };
 
     const containerVariants = {
         animate: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
     };
 
-    const itemVariants = {
-        initial: { opacity: 0, y: 15 } as any,
+    const itemVariants: Variants = {
+        initial: { opacity: 0, y: 15 },
         animate: {
             opacity: 1,
             y: 0,
             transition: { duration: 0.4, ease: "easeOut" }
-        } as any
+        }
     };
 
     return (
@@ -79,42 +79,44 @@ const Sidebar: React.FC<SidebarProps> = ({
             animate="open"
             exit="closed"
             variants={sidebarVariants}
-            className="fixed lg:sticky top-0 left-0 h-screen glass z-50 p-6 md:p-8 flex flex-col overflow-y-auto no-scrollbar w-[85vw] sm:w-[380px] lg:w-[420px] transition-all bg-slate-950/80 border-r border-white/5"
+            className="fixed lg:sticky top-0 left-0 h-screen w-[85vw] sm:w-[380px] lg:w-[420px] 
+                       bg-background/95 backdrop-blur-xl border-r border-white/5 z-50 
+                       flex flex-col p-6 md:p-8 overflow-y-auto no-scrollbar shadow-glass-xl"
         >
-            <div className="flex items-center justify-between mb-10 md:mb-12">
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-[1.25rem] flex-center shadow-lg shadow-indigo-500/30">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex-center shadow-lg shadow-black/20 border border-white/10">
                         <Layout className="text-white" size={20} />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-black tracking-tighter gradient-text leading-none">SlideCraft<span className="text-indigo-400">AI</span></h1>
-                        <p className="text-[8px] md:text-[10px] text-indigo-400 font-bold tracking-[0.2em] uppercase">Premium Deck Engine</p>
+                        <h1 className="text-xl font-bold tracking-tight text-white leading-none">SlideCraft<span className="text-accent">AI</span></h1>
+                        <p className="text-[10px] text-accent/80 font-bold tracking-widest uppercase mt-1">Premium Deck Engine</p>
                     </div>
                 </div>
 
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
+                <button
                     onClick={onClose}
-                    className="lg:hidden p-3 hover:bg-white/5 rounded-2xl text-slate-400"
+                    className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-muted transition-colors"
                 >
-                    <X size={24} />
-                </motion.button>
+                    <X size={20} />
+                </button>
             </div>
 
-            <motion.div variants={containerVariants} initial="initial" animate="animate" className="flex-grow space-y-8 md:space-y-10">
+            <motion.div variants={containerVariants} initial="initial" animate="animate" className="flex-grow space-y-8">
+                {/* Input Mode Selection */}
                 <motion.section variants={itemVariants} className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <FileText size={12} className="text-indigo-500" /> Content Logic
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-muted uppercase tracking-widest flex items-center gap-2">
+                            <FileText size={14} className="text-accent" /> Content Source
                         </label>
-                        <div className="flex bg-slate-900/50 p-1 rounded-xl border border-white/5">
+                        <div className="flex bg-surface p-1 rounded-lg border border-white/5">
                             {(['topic', 'content', 'file'] as const).map((mode) => (
                                 <button
                                     key={mode}
                                     onClick={() => setInputMode(mode)}
-                                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${inputMode === mode
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                        : 'text-slate-500 hover:text-slate-300'
+                                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${inputMode === mode
+                                        ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                                        : 'text-muted hover:text-white'
                                         }`}
                                 >
                                     {mode}
@@ -130,47 +132,52 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
                                 className="space-y-4"
                             >
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="group border border-dashed border-white/10 rounded-2xl p-6 md:p-8 flex-center flex-col cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500/30 transition-all bg-black/20"
+                                    className="group border border-dashed border-white/10 rounded-xl p-8 flex flex-col items-center justify-center 
+                                               cursor-pointer hover:bg-white/5 hover:border-accent/30 transition-all bg-surface/50"
                                 >
-                                    <div className="w-10 h-10 bg-slate-800 rounded-full flex-center mb-3 group-hover:scale-110 transition-transform">
-                                        <Upload size={18} className="text-slate-400" />
+                                    <div className="w-12 h-12 bg-surface rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border border-white/5">
+                                        <Upload size={20} className="text-muted group-hover:text-accent transition-colors" />
                                     </div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upload Assets</p>
-                                    <p className="text-[10px] text-slate-600 mt-1">PDF, DOCX, or Images</p>
+                                    <p className="text-xs font-bold text-muted uppercase tracking-widest group-hover:text-white transition-colors">Upload Assets</p>
+                                    <p className="text-[10px] text-muted/60 mt-1">PDF, DOCX, Images</p>
                                     <input
                                         type="file"
                                         ref={fileInputRef}
                                         className="hidden"
                                         multiple
                                         onChange={handleFileChange}
-                                        accept=".pdf,.docx,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                        accept=".pdf,.docx,image/*"
                                     />
                                 </div>
 
                                 <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar">
                                     {selectedFiles.map((file) => (
                                         <motion.div
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
                                             key={file.id}
-                                            className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl group"
+                                            className="flex items-center justify-between p-3 bg-surface border border-white/5 rounded-lg group hover:border-white/10 transition-colors"
                                         >
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 overflow-hidden">
                                                 {file.mimeType.startsWith('image/') ? (
-                                                    <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
-                                                        <img src={`data:${file.mimeType};base64,${file.data}`} className="w-full h-full object-cover" />
+                                                    <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0">
+                                                        <img src={`data:${file.mimeType};base64,${file.data}`} className="w-full h-full object-cover" alt="Preview" />
                                                     </div>
                                                 ) : (
-                                                    <File size={14} className="text-indigo-400" />
+                                                    <div className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0">
+                                                        <File size={14} className="text-accent" />
+                                                    </div>
                                                 )}
-                                                <span className="text-xs font-medium truncate max-w-[150px]">{file.name}</span>
+                                                <span className="text-xs font-medium text-slate-300 truncate">{file.name}</span>
                                             </div>
-                                            <button onClick={() => removeFile(file.id)} className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-red-400 transition-colors">
+                                            <button
+                                                onClick={() => removeFile(file.id)}
+                                                className="p-1.5 hover:bg-white/10 rounded-md text-muted hover:text-red-400 transition-colors"
+                                            >
                                                 <X size={14} />
                                             </button>
                                         </motion.div>
@@ -183,138 +190,128 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
                                 className="relative group"
                             >
                                 <textarea
-                                    className="w-full h-44 md:h-52 bg-slate-900/30 border border-white/5 rounded-2xl p-5 text-sm md:text-base text-slate-100 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900/50 transition-all resize-none shadow-inner"
-                                    placeholder={inputMode === 'topic' ? "Enter your presentation topic..." : "Paste your detailed content/notes here..."}
+                                    className="input-field h-48 resize-none text-sm leading-relaxed"
+                                    placeholder={inputMode === 'topic' ? "Enter your presentation topic..." : "Paste your content notes here..."}
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                 />
-                                <div className="absolute right-4 bottom-4 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                                    <Sparkles size={16} className="text-indigo-400" />
+                                <div className="absolute right-4 bottom-4 pointer-events-none">
+                                    <Sparkles size={16} className="text-accent opacity-50 group-focus-within:opacity-100 transition-opacity" />
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </motion.section>
 
-                <AnimatePresence mode="wait">
+                {/* Slide Count */}
+                <AnimatePresence>
                     {inputMode !== 'content' && (
                         <motion.section
-                            key="slide-count"
-                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                            animate={{ opacity: 1, height: 'auto', marginTop: 32 }}
-                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="space-y-4 overflow-hidden"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-4"
                         >
-                            <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Monitor size={12} className="text-indigo-500" /> Deck Magnitude
+                            <label className="text-xs font-bold text-muted uppercase tracking-widest flex items-center gap-2">
+                                <Monitor size={14} className="text-accent" /> Deck Size
                             </label>
-                            <div className="flex items-center gap-4 bg-slate-900/30 border border-white/5 rounded-2xl p-4">
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                            <div className="flex items-center gap-4 bg-surface p-2 rounded-xl border border-white/5">
+                                <button
                                     onClick={() => setSlideCount(Math.max(1, slideCount - 1))}
-                                    className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex-center text-slate-400 hover:text-white transition-colors"
+                                    className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-muted hover:text-white transition-colors"
                                 >
                                     -
-                                </motion.button>
+                                </button>
                                 <div className="flex-grow text-center">
-                                    <span className="text-2xl font-black text-white">{slideCount}</span>
-                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-2">Slides</span>
+                                    <span className="text-xl font-bold text-white">{slideCount}</span>
+                                    <span className="text-[10px] text-muted font-bold uppercase tracking-widest ml-2">Slides</span>
                                 </div>
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                                <button
                                     onClick={() => setSlideCount(Math.min(20, slideCount + 1))}
-                                    className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex-center text-slate-400 hover:text-white transition-colors"
+                                    className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-muted hover:text-white transition-colors"
                                 >
                                     +
-                                </motion.button>
+                                </button>
                             </div>
                         </motion.section>
                     )}
                 </AnimatePresence>
 
+                {/* Theme Selection */}
                 <motion.section variants={itemVariants} className="space-y-4">
-                    <label className="px-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Palette size={12} className="text-indigo-500" /> Visual Identity
+                    <label className="text-xs font-bold text-muted uppercase tracking-widest flex items-center gap-2">
+                        <Palette size={14} className="text-accent" /> Visual Style
                     </label>
-                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         {themePresets.map((t) => (
-                            <motion.button
+                            <button
                                 key={t}
-                                whileHover={{ scale: 1.05, translateY: -2, boxShadow: '0 8px 15px -8px rgba(99, 102, 241, 0.4)' }}
-                                whileTap={{ scale: 0.98 }}
                                 onClick={() => setTheme(t)}
-                                className={`relative p-3 md:p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 truncate ${theme === t
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border-transparent'
-                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                className={`relative p-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all truncate border ${theme === t
+                                    ? 'bg-accent text-white border-accent shadow-lg shadow-accent/20'
+                                    : 'bg-surface text-muted border-white/5 hover:border-white/10 hover:text-white'
                                     }`}
                             >
                                 {t}
                                 {theme === t && (
-                                    <div className="absolute top-1 right-1">
-                                        <Check size={8} className="text-white" />
-                                    </div>
+                                    <Check size={10} className="absolute top-1.5 right-1.5" />
                                 )}
-                            </motion.button>
+                            </button>
                         ))}
                     </div>
                 </motion.section>
             </motion.div>
 
+            {/* Generate Button */}
             <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-10"
+                className="mt-8 pt-6 border-t border-white/5"
             >
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                <button
                     onClick={onGenerate}
                     disabled={isLoading}
-                    className="w-full py-4 md:py-5 bg-indigo-600 rounded-2xl md:rounded-[1.25rem] font-black text-sm tracking-widest uppercase flex-center gap-3 hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/30 disabled:opacity-50"
+                    className="w-full btn-primary flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
-                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                         <>
-                            <span>Create Presentation</span>
-                            <ChevronRight size={18} />
+                            <span>Generate Deck</span>
+                            <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
-                </motion.button>
+                </button>
             </motion.div>
 
+            {/* Profile Footer */}
             {user && (
-                <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="mt-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                         <div className="relative">
-                            <img src={user.imageUrl} className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-white/10" alt="Avatar" />
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-slate-950 rounded-full" />
+                            <img src={user.imageUrl} className="w-10 h-10 rounded-lg border border-white/10" alt="Profile" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-background rounded-full" />
                         </div>
                         <div>
-                            <p className="text-xs md:text-sm font-black text-white">@{userProfile?.username || user.username}</p>
-                            <div className="flex items-center gap-2">
-                                <Database size={10} className="text-indigo-400" />
-                                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest leading-none">
+                            <p className="text-xs font-bold text-white">@{userProfile?.username || user.username}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <Database size={10} className="text-accent" />
+                                <p className="text-[10px] text-accent font-bold uppercase tracking-widest">
                                     {userProfile?.credits ?? 0} Credits
                                 </p>
                             </div>
                         </div>
                     </div>
-
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                    <button
                         onClick={onOpenTransfer}
-                        className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
-                        title="Transfer credits"
+                        className="p-2 hover:bg-white/5 rounded-lg text-muted hover:text-accent transition-colors"
+                        title="Transfer Credits"
                     >
                         <Send size={16} />
-                    </motion.button>
+                    </button>
                 </div>
             )}
         </motion.aside>
